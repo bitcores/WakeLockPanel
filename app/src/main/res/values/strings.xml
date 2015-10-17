@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">WakeLockPanel</string>
+    <string name="wakelockpanel_cocktail_name">WakeLockPanel</string>
+    <string name="wakelockpanel_cocktail_desc">WakeLockPanel</string>
+</resources>
