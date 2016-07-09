@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 
+import com.samsung.android.sdk.look.Slook;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 
@@ -18,12 +19,16 @@ import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
  * Created by bitcores on 2015-07-20.
  */
 public class WakeLockPanelProvider extends SlookCocktailProvider {
+    private static Boolean isEnabled = false;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-
         String action = intent.getAction();
+
+        if (!isEnabled) {
+            return;
+        }
 
         if (action.equals(WakeLockPanelCommon.WAKELOCK_UPDATE)) {
             ComponentName wakeLockCocktail = new ComponentName(context, WakeLockPanelProvider.class);
@@ -45,6 +50,7 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
     @Override
     public void onEnabled(Context context) {
         super.onEnabled(context);
+        isEnabled = true;
     }
 
     @Override
@@ -52,6 +58,7 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
         WakeLockPanelService wakeLockPanelService = new WakeLockPanelService();
         wakeLockPanelService.clearLock();
 
+        isEnabled = false;
         super.onDisabled(context);
     }
 
