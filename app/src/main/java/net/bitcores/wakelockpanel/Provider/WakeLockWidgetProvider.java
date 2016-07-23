@@ -27,7 +27,7 @@ public class WakeLockWidgetProvider extends AppWidgetProvider {
         super.onReceive(context, intent);
         String action = intent.getAction();
 
-        if (action.equals(WakeLockPanelCommon.WAKELOCK_UPDATE)) {
+        if (action.equals(WakeLockPanelCommon.WAKELOCK_UPDATE) || action.equals(WakeLockPanelCommon.WAKELOCK_WIDGET_UPDATE)) {
             ComponentName wakeLockWidget = new ComponentName(context, WakeLockWidgetProvider.class);
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             int[] widgetIds = appWidgetManager.getAppWidgetIds(wakeLockWidget);
@@ -66,6 +66,9 @@ public class WakeLockWidgetProvider extends AppWidgetProvider {
 
     private void updateWidgets(Context context, AppWidgetManager appWidgetManager, int[] widgetIds) {
         WakeLockPanelService wakeLockPanelService = new WakeLockPanelService();
+        WakeLockPanelCommon wakeLockPanelCommon = new WakeLockPanelCommon();
+        wakeLockPanelCommon.initSettings(context);
+
         RemoteViews layout = new RemoteViews(context.getPackageName(), R.layout.wakelockwidget_layout);
 
         Boolean portrait = (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
@@ -117,7 +120,7 @@ public class WakeLockWidgetProvider extends AppWidgetProvider {
             }
         }
 
-        if (!wakeLockPanelService.testMode()) {
+        if (!wakeLockPanelCommon.testMode()) {
             bMap = BitmapFactory.decodeResource(context.getResources(), R.drawable.modebright);
         } else {
             bMap = BitmapFactory.decodeResource(context.getResources(), R.drawable.modedim);
@@ -127,7 +130,7 @@ public class WakeLockWidgetProvider extends AppWidgetProvider {
         }
         layout.setImageViewBitmap(R.id.wakeLockMode, bMap);
 
-        if (!wakeLockPanelService.testTimer()) {
+        if (!wakeLockPanelCommon.getTimer()) {
             layout.setImageViewResource(R.id.timerButton, R.drawable.unchecked);
         } else {
             layout.setImageViewResource(R.id.timerButton, R.drawable.checked);
@@ -135,11 +138,11 @@ public class WakeLockWidgetProvider extends AppWidgetProvider {
 
         layout.setImageViewResource(R.id.plusButton, R.drawable.plus);
         layout.setImageViewResource(R.id.minusButton, R.drawable.minus);
-        layout.setTextViewText(R.id.minuteText, wakeLockPanelService.getMinutes());
-        layout.setTextViewText(R.id.secondText, wakeLockPanelService.getSeconds());
+        layout.setTextViewText(R.id.minuteText, wakeLockPanelCommon.getMinutes());
+        layout.setTextViewText(R.id.secondText, wakeLockPanelCommon.getSeconds());
 
-        for (int i = 0; i < widgetIds.length; i++) {
-            appWidgetManager.updateAppWidget(widgetIds[i], layout);
+        for (int wId: widgetIds) {
+            appWidgetManager.updateAppWidget(wId, layout);
         }
     }
 

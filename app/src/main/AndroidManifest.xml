@@ -1,12 +1,31 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.bitcores.wakelockpanel">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <application android:allowBackup="true" android:label="@string/app_name"
-        android:icon="@drawable/wakelocklogo" android:theme="@style/AppTheme" >
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@drawable/wakelocklogo"
+        android:theme="@style/AppTheme" >
+
+        <activity android:name=".Activity.WakeLockSettingsActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
 
         <service android:name=".Service.WakeLockPanelService" />
+
+        <receiver android:name=".Receiver.BootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
 
         <receiver android:name=".Provider.WakeLockPanelProvider" >
             <intent-filter>

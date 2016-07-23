@@ -21,6 +21,7 @@ import java.util.Arrays;
  */
 public class WakeLockPanelService extends Service {
     private Context mContext;
+    private WakeLockPanelCommon wakeLockPanelCommon;
     private static PowerManager pm;
     private static PowerManager.WakeLock wakeLock = null;
 
@@ -50,24 +51,23 @@ public class WakeLockPanelService extends Service {
                     clearLock();
                     Toast.makeText(mContext, "Wakelock disabled", Toast.LENGTH_SHORT).show();
                 } else {
-                    wakeLock = pm.newWakeLock(modeList.get(WakeLockPanelCommon.WAKELOCK_MODE), WakeLockPanelCommon.WAKELOCK_TAG);
-                    if (WakeLockPanelCommon.timerMode) {
+                    wakeLock = pm.newWakeLock(modeList.get(wakeLockPanelCommon.getMode()), WakeLockPanelCommon.WAKELOCK_TAG);
+                    if (wakeLockPanelCommon.getTimer()) {
                         long ms = ((WakeLockPanelCommon.minutes * 60) + WakeLockPanelCommon.seconds) * 1000;
                         WakeLockPanelCommon.endTime = System.currentTimeMillis() + ms;
-                        wakeLock.acquire(ms);
+                        acquireLock(ms);
                     } else {
                         WakeLockPanelCommon.endTime = System.currentTimeMillis() + 58000;
-                        wakeLock.acquire(60000);
+                        acquireLock(60000);
                     }
 
                     mHandler.postDelayed(r, 1000);
                     Toast.makeText(mContext, "Wakelock enabled", Toast.LENGTH_SHORT).show();
                 }
-
+                wakeLockPanelCommon.doNotification(mContext);
             } else if (wakeLock == null) {
                 if (action == WakeLockPanelCommon.WAKELOCK_ACTION_TOGGLEMODE) {
-                    WakeLockPanelCommon.WAKELOCK_MODE = (WakeLockPanelCommon.WAKELOCK_MODE == 0) ? 1 : 0;
-
+                    wakeLockPanelCommon.toggleWakeLockMode();
                 } else if (action == WakeLockPanelCommon.WAKELOCK_ACTION_INCREMENT) {
                     if (WakeLockPanelCommon.timerSelect == 0) {
                         incrementMinutes(mode);
@@ -75,14 +75,14 @@ public class WakeLockPanelService extends Service {
                         incrementSeconds(mode);
                     }
                 } else if (action == WakeLockPanelCommon.WAKELOCK_ACTION_TIMER) {
-                    WakeLockPanelCommon.timerMode = !WakeLockPanelCommon.timerMode;
+                    wakeLockPanelCommon.toggleTimerMode();
 
                 } else if (action == WakeLockPanelCommon.WAKELOCK_ACTION_INPUT) {
-                    WakeLockPanelCommon.timerSelect = mode;
+                    wakeLockPanelCommon.selectTimer(mode);
                 }
             }
 
-            broadcastUpdate();
+            wakeLockPanelCommon.broadcastUpdate(mContext);
         }
 
         return Service.START_STICKY;
@@ -93,6 +93,8 @@ public class WakeLockPanelService extends Service {
         super.onCreate();
 
         mContext = getApplicationContext();
+        wakeLockPanelCommon = new WakeLockPanelCommon();
+        wakeLockPanelCommon.initSettings(mContext);
 
         pm = (PowerManager)getSystemService(WakeLockPanelService.POWER_SERVICE);
     }
@@ -103,6 +105,16 @@ public class WakeLockPanelService extends Service {
         clearLock();
 
         super.onDestroy();
+    }
+
+    private void acquireLock(long ms) {
+        if (wakeLock != null) {
+            try {
+                wakeLock.acquire(ms);
+            } catch (Throwable th) {
+                // somehow the wakelock isnt assigned before being activated
+            }
+        }
     }
 
     public void clearLock() {
@@ -116,28 +128,8 @@ public class WakeLockPanelService extends Service {
         }
     }
 
-    public boolean testToggleActive(){
+    public boolean testToggleActive() {
         return (wakeLock != null);
-    }
-
-    public boolean testMode() { return (WakeLockPanelCommon.WAKELOCK_MODE != 0); }
-
-    public boolean testTimer() { return WakeLockPanelCommon.timerMode; }
-
-    public String getMinutes() {
-        String mins = WakeLockPanelCommon.minutes.toString();
-        if (mins.length() == 1) {
-            mins = "0" + mins;
-        }
-        return mins;
-    }
-
-    public String getSeconds() {
-        String secs = WakeLockPanelCommon.seconds.toString();
-        if (secs.length() == 1) {
-            secs = "0" + secs;
-        }
-        return secs;
     }
 
     public void incrementSeconds(int mode) {
@@ -176,34 +168,27 @@ public class WakeLockPanelService extends Service {
         if (wakeLock != null) {
             long time = System.currentTimeMillis();
 
-            if (WakeLockPanelCommon.timerMode) {
+            if (wakeLockPanelCommon.getTimer()) {
                 WakeLockPanelCommon.minutes = (int) ((WakeLockPanelCommon.endTime - time) / 1000) / 60;
                 WakeLockPanelCommon.seconds = (int) ((WakeLockPanelCommon.endTime - time) / 1000) % 60;
 
                 if (time >= WakeLockPanelCommon.endTime) {
                     clearLock();
-                    WakeLockPanelCommon.minutes = 10;
-                    WakeLockPanelCommon.seconds = 0;
+                    wakeLockPanelCommon.resetTimer();
                 } else {
                     mHandler.postDelayed(this, 1000);
                 }
             } else {
                 if (time >= WakeLockPanelCommon.endTime) {
                     WakeLockPanelCommon.endTime = System.currentTimeMillis() + 58000;
-                    wakeLock.acquire(60000);
+                    acquireLock(60000);
                 }
                 mHandler.postDelayed(this, 1000);
             }
 
-            broadcastUpdate();
+            wakeLockPanelCommon.broadcastUpdate(mContext);
         }
         }
     };
-
-    private void broadcastUpdate() {
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(WakeLockPanelCommon.WAKELOCK_UPDATE);
-        sendBroadcast(broadcastIntent);
-    }
 
 }

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="useNotification"
+        android:title="@string/wakelock_usenotification"
+        android:summary="@string/wakelock_usenotification_summary"
+        android:defaultValue="false" />
+
+    <SwitchPreference
+        android:key="onBoot"
+        android:title="@string/wakelock_onboot"
+        android:summary="@string/wakelock_onboot_summary"
+        android:dependency="useNotification"
+        android:defaultValue="false" />
+
+    <ListPreference
+        android:key="lockType"
+        android:title="@string/wakelock_locktype"
+        android:dialogTitle="@string/wakelock_locktype"
+        android:entries="@array/locktype_entries"
+        android:entryValues="@array/locktype_values"
+        android:defaultValue="@string/locktype_default" />
+
+    <SwitchPreference
+        android:key="useTimer"
+        android:title="@string/wakelock_usetimer"
+        android:summary="@string/wakelock_usetimer_summary"
+        android:defaultValue="false" />
+
+    <net.bitcores.wakelockpanel.Activity.TimerPreference
+        android:key="lockTimer"
+        android:title="Set Timer"
+        android:summary="Set your wakelock timer"
+        />
+
+    <SwitchPreference
+        android:key="activateIt"
+        android:title="@string/wakelock_activateit"
+        android:summary="@string/wakelock_activateit_summary"
+        android:defaultValue="false"
+        android:persistent="false" />
+
+</PreferenceScreen>

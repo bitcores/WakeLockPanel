@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 
-import com.samsung.android.sdk.look.Slook;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 
@@ -25,10 +24,6 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
         String action = intent.getAction();
-
-        if (!isEnabled) {
-            return;
-        }
 
         if (action.equals(WakeLockPanelCommon.WAKELOCK_UPDATE)) {
             ComponentName wakeLockCocktail = new ComponentName(context, WakeLockPanelProvider.class);
@@ -50,7 +45,7 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
     @Override
     public void onEnabled(Context context) {
         super.onEnabled(context);
-        isEnabled = true;
+        WakeLockPanelCommon.coctailEnabled = true;
     }
 
     @Override
@@ -58,7 +53,7 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
         WakeLockPanelService wakeLockPanelService = new WakeLockPanelService();
         wakeLockPanelService.clearLock();
 
-        isEnabled = false;
+        WakeLockPanelCommon.coctailEnabled = false;
         super.onDisabled(context);
     }
 
@@ -71,6 +66,9 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
 
     private void updateCocktails(Context context, SlookCocktailManager cocktailBarManager, int[] cocktailIds) {
         WakeLockPanelService wakeLockPanelService = new WakeLockPanelService();
+        WakeLockPanelCommon wakeLockPanelCommon = new WakeLockPanelCommon();
+        wakeLockPanelCommon.initSettings(context);
+
         RemoteViews layout = new RemoteViews(context.getPackageName(), R.layout.wakelockpanel_layout);
 
         //  MAKE PENDING INTENTS
@@ -107,13 +105,13 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
             }
         }
 
-        if (!wakeLockPanelService.testMode()) {
+        if (!wakeLockPanelCommon.testMode()) {
             layout.setImageViewResource(R.id.wakeLockMode, R.drawable.modebright);
         } else {
             layout.setImageViewResource(R.id.wakeLockMode, R.drawable.modedim);
         }
 
-        if (!wakeLockPanelService.testTimer()) {
+        if (!wakeLockPanelCommon.getTimer()) {
             layout.setImageViewResource(R.id.timerButton, R.drawable.unchecked);
         } else {
             layout.setImageViewResource(R.id.timerButton, R.drawable.checked);
@@ -121,12 +119,11 @@ public class WakeLockPanelProvider extends SlookCocktailProvider {
 
         layout.setImageViewResource(R.id.plusButton, R.drawable.plus);
         layout.setImageViewResource(R.id.minusButton, R.drawable.minus);
-        layout.setTextViewText(R.id.minuteText, wakeLockPanelService.getMinutes());
-        layout.setTextViewText(R.id.secondText, wakeLockPanelService.getSeconds());
+        layout.setTextViewText(R.id.minuteText, wakeLockPanelCommon.getMinutes());
+        layout.setTextViewText(R.id.secondText, wakeLockPanelCommon.getSeconds());
 
-
-        for (int i = 0; i < cocktailIds.length; i++) {
-            cocktailBarManager.updateCocktail(cocktailIds[i], layout);
+        for (int cId: cocktailIds) {
+            cocktailBarManager.updateCocktail(cId, layout);
         }
     }
 

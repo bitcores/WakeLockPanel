@@ -1,5 +1,18 @@
 <resources>
-    <string name="app_name">WakeLockPanel</string>
+    <string name="app_name">Wake Locker</string>
     <string name="wakelockpanel_cocktail_name">WakeLockPanel</string>
     <string name="wakelockpanel_cocktail_desc">WakeLockPanel</string>
+    <string name="wakelock_usenotification">Show in Notification Tray</string>
+    <string name="wakelock_usenotification_summary">Display toggle options in notification tray</string>
+    <string name="wakelock_onboot">Show on Boot</string>
+    <string name="wakelock_onboot_summary">Automatically load notification tray icon on boot</string>
+    <string name="wakelock_locktype">Wakelock Type</string>
+    <string name="locktype_default">1</string>
+    <string name="wakelock_usetimer">Use Timer</string>
+    <string name="wakelock_usetimer_summary">Automatically releases wakelock after set time</string>
+    <string name="wakelock_activateit">Activate Wakelock</string>
+    <string name="wakelock_activateit_summary">Test the wakelock settings now</string>
+    <string name="timerdivider">\u0020:\u0020</string>
+    <string name="activatewl">Activate Wakelock</string>
+    <string name="deactivatewl">Deactivate Wakelock</string>
 </resources>
